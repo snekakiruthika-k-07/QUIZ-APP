@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div id="question"></div>
+        <div id="answer-buttons" class="btn-grid"></div>
+        <div class="controls">
+            <button id="start-btn" class="start-btn btn">Start</button>
+            <button id="next-btn" class="next-btn btn hide">Next</button>
+        </div>
+    </div>
+    <div class="score">
+        <span id="right-answers">Score: 0</span>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+:root {
+    --hue-neutral: 200;
+    --hue-wrong: 0;
+    --hue-correct: 145;
+}
+
+body {
+    --hue: var(--hue-neutral);
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: hsl(var(--hue), 100%, 20%);
+}
+
+body.correct {
+    --hue: var(--hue-correct);
+}
+
+body.wrong {
+    --hue: var(--hue-wrong);
+}
+
+.container {
+    width: 800px;
+    max-width: 80%;
+    background-color: aliceblue;
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-grid {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.btn {
+    --hue: var(--hue-neutral);
+    border: 1px solid hsl(var(--hue), 100%, 20%);
+    background-color: hsl(var(--hue), 100%, 50%);
+    border-radius: 5px;
+    padding: 10px 20px;
+    color: bisque;
+    outline: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    border-color: black;
+}
+
+.start-btn,
+.next-btn {
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hide {
+    display: none;
+}
+
+
+
+
+
+
+
+const startButton = document.getElementById("start-btn");
+const nextButton = document.getElementById("next-btn");
+const questionElement = document.getElementById("question");
+const answerButtonsElement = document.getElementById("answer-buttons");
+const scoreDisplay = document.getElementById("right-answers");
+
+let currentQuestionIndex;
+let score = 0;
+
+startButton.addEventListener("click", startGame);
+nextButton.addEventListener("click", () => {
+  currentQuestionIndex++;
+  setNextQuestion();
+});
+
+function startGame() {
+  startButton.classList.add("hide");
+  nextButton.classList.remove("hide");
+  currentQuestionIndex = 0;
+  score = 0;
+  scoreDisplay.innerText = "Score: " + score;
+  setNextQuestion();
+}
+
+function setNextQuestion() {
+  resetState();
+  showQuestion(questions[currentQuestionIndex]);
+}
+
+function showQuestion(question) {
+  questionElement.innerText = question.question;
+  question.answers.forEach((answer) => {
+    const button = document.createElement("button");
+    button.innerText = answer.text;
+    button.classList.add("btn");
+    if (answer.correct) {
+      button.dataset.correct = answer.correct;
+    }
+    button.addEventListener("click", selectAnswer);
+    answerButtonsElement.appendChild(button);
+  });
+}
+
+function resetState() {
+  nextButton.classList.add("hide");
+  while (answerButtonsElement.firstChild) {
+    answerButtonsElement.removeChild(answerButtonsElement.firstChild);
+  }
+}
+
+function selectAnswer(e) {
+  const selectedButton = e.target;
+  const correct = selectedButton.dataset.correct === "true";
+  if (correct) {
+    score++;
+    scoreDisplay.innerText = "Score: " + score;
+  }
+  setStatusClass(document.body, correct);
+  Array.from(answerButtonsElement.children).forEach((button) => {
+    setStatusClass(button, button.dataset.correct === "true");
+  });
+  if (currentQuestionIndex < questions.length - 1) {
+    nextButton.classList.remove("hide");
+  } else {
+    startButton.innerText = "Restart";
+    startButton.classList.remove("hide");
+  }
+}
+
+function setStatusClass(element, correct) {
+  element.classList.remove("correct", "wrong");
+  if (correct) {
+    element.classList.add("correct");
+  } else {
+    element.classList.add("wrong");
+  }
+}
+
+const questions = [
+  {
+    question: "Which one is my favorite color?",
+    answers: [
+      { text: "Pink", correct: true },
+      { text: "Black", correct: false },
+      { text: "Red", correct: false },
+      { text: "Green", correct: false },
+    ],
+  },
+  {
+    question: "Which one is my favorite place?",
+    answers: [
+      { text: "Switzerland", correct: false },
+      { text: "Ooty", correct: false },
+      { text: "Maldives", correct: true },
+      { text: "Kerala", correct: false },
+    ],
+  },
+  {
+    question: "Which one is my favorite chocolate?",
+    answers: [
+      { text: "Dairy Milk", correct: false },
+      { text: "Crispello", correct: true },
+      { text: "Milky Bar", correct: false },
+      { text: "Kinder Joy", correct: false },
+    ],
+  },
+  {
+    question: "Which one is my favorite hobby?",
+    answers: [
+      { text: "Eating", correct: false },
+      { text: "Dancing", correct: false },
+      { text: "Sleeping", correct: true },
+      { text: "Cooking", correct: false },
+    ],
+  },
+];
